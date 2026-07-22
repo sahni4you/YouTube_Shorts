@@ -116,7 +116,7 @@
       border-radius: 12px;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 12px;
     }
 
     .controls-label {
@@ -128,24 +128,41 @@
 
     .speed-buttons {
       display: flex;
+      flex-wrap: wrap; /* Added for 2 rows */
       gap: 6px;
       justify-content: space-between;
     }
 
     .speed-btn {
-      flex: 1;
+      flex: 1 1 calc(18%); /* Adjusts to fit 5 items per row nicely */
       padding: 8px 0;
       background: #2b2b2b;
       border: 1px solid #3a3a3a;
       border-radius: 6px;
       color: #eee;
       font-size: 0.85rem;
+      min-width: 45px;
     }
 
     .speed-btn.active {
       background: #ff3333;
       border-color: #ff3333;
       color: #fff;
+    }
+
+    /* New Default Speed UI */
+    .default-speed-box {
+      display: flex;
+      gap: 8px;
+    }
+
+    .default-speed-box input[type="text"] {
+      flex: 0.4;
+      text-align: center;
+    }
+
+    .default-speed-box button {
+      flex: 0.6;
     }
   </style>
 </head>
@@ -169,11 +186,23 @@
   <div class="controls-card">
     <span class="controls-label">Speed Controls</span>
     <div class="speed-buttons">
-      <button class="speed-btn" onclick="setSpeed(0.75)">0.75x</button>
-      <button class="speed-btn active" id="btn-1" onclick="setSpeed(1)">1x</button>
-      <button class="speed-btn" onclick="setSpeed(1.25)">1.25x</button>
-      <button class="speed-btn" onclick="setSpeed(1.5)">1.5x</button>
-      <button class="speed-btn" onclick="setSpeed(2)">2x</button>
+      <!-- Added data-rate attributes for robust JS handling -->
+      <button class="speed-btn" data-rate="0.25" onclick="setSpeed(0.25)">0.25</button>
+      <button class="speed-btn" data-rate="0.35" onclick="setSpeed(0.35)">0.35</button>
+      <button class="speed-btn" data-rate="0.45" onclick="setSpeed(0.45)">0.45</button>
+      <button class="speed-btn" data-rate="0.55" onclick="setSpeed(0.55)">0.55</button>
+      <button class="speed-btn" data-rate="0.65" onclick="setSpeed(0.65)">0.65</button>
+      <button class="speed-btn" data-rate="0.75" onclick="setSpeed(0.75)">0.75</button>
+      <button class="speed-btn" data-rate="0.85" onclick="setSpeed(0.85)">0.85</button>
+      <button class="speed-btn" data-rate="0.9" onclick="setSpeed(0.9)">0.9</button>
+      <button class="speed-btn" data-rate="0.95" onclick="setSpeed(0.95)">0.95</button>
+      <button class="speed-btn" data-rate="1" onclick="setSpeed(1)">1</button>
+    </div>
+
+    <!-- Default Speed Feature -->
+    <div class="default-speed-box">
+      <input type="text" id="Speed_to_set" value="" readonly placeholder="Rate" />
+      <button id="set_Default_Speed" onclick="saveDefaultSpeed()">Set Speed</button>
     </div>
   </div>
 
@@ -182,6 +211,27 @@
   <script>
     let player;
     let isApiReady = false;
+
+    // LocalStorage initialization logic
+    function getDefaultSpeed() {
+      const stored = localStorage.getItem('defaultSpeed');
+      return stored ? parseFloat(stored) : 0.25;
+    }
+
+    function saveDefaultSpeed() {
+      const speedVal = document.getElementById('Speed_to_set').value;
+      if (speedVal) {
+        localStorage.setItem('defaultSpeed', speedVal);
+        alert('Default speed successfully set to: ' + speedVal);
+      }
+    }
+
+    // Set UI on page load
+    window.addEventListener('DOMContentLoaded', () => {
+      const initSpeed = getDefaultSpeed();
+      document.getElementById('Speed_to_set').value = initSpeed;
+      updateActiveButton(initSpeed);
+    });
 
     function onYouTubeIframeAPIReady() {
       isApiReady = true;
@@ -226,7 +276,16 @@
             'playsinline': 1
           },
           events: {
-            'onReady': (event) => event.target.playVideo()
+            'onReady': (event) => {
+              event.target.playVideo();
+            },
+            // Ensuring speed applies correctly immediately after video starts
+            'onStateChange': (event) => {
+              if (event.data === YT.PlayerState.PLAYING) {
+                const currentRate = parseFloat(document.getElementById('Speed_to_set').value) || getDefaultSpeed();
+                event.target.setPlaybackRate(currentRate);
+              }
+            }
           }
         });
       } else {
@@ -234,15 +293,25 @@
       }
     }
 
-    // Speed Control Logic
+    // Speed Control Logic (Triggered by user click)
     function setSpeed(rate) {
+      document.getElementById('Speed_to_set').value = rate;
+
       if (player && typeof player.setPlaybackRate === 'function') {
         player.setPlaybackRate(rate);
-
-        // Update UI Active State
-        document.querySelectorAll('.speed-btn').forEach(btn => btn.classList.remove('active'));
-        event.target.classList.add('active');
       }
+
+      updateActiveButton(rate);
+    }
+
+    // Updates the visual active class cleanly
+    function updateActiveButton(rate) {
+      document.querySelectorAll('.speed-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (parseFloat(btn.getAttribute('data-rate')) === rate) {
+          btn.classList.add('active');
+        }
+      });
     }
   </script>
 
