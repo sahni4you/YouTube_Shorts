@@ -1,0 +1,248 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Shorts Player</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#ff0000" />
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+      background-color: #0f0f0f;
+      color: #ffffff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 16px;
+    }
+
+    header {
+      width: 100%;
+      max-width: 420px;
+      text-align: center;
+      margin-bottom: 16px;
+    }
+
+    h1 {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: #ff3333;
+    }
+
+    .input-box {
+      width: 100%;
+      max-width: 420px;
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #333;
+      background: #1f1f1f;
+      color: #fff;
+      font-size: 0.95rem;
+      outline: none;
+    }
+
+    input[type="text"]:focus {
+      border-color: #ff3333;
+    }
+
+    button {
+      padding: 12px 16px;
+      border-radius: 8px;
+      border: none;
+      background: #ff3333;
+      color: white;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    button:active {
+      background: #cc0000;
+    }
+
+    /* 9:16 Aspect Ratio Container for Vertical Shorts */
+    .player-wrapper {
+      width: 100%;
+      max-width: 360px;
+      aspect-ratio: 9 / 16;
+      background: #181818;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+      position: relative;
+    }
+
+    #player {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    .placeholder-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: #888;
+      font-size: 0.9rem;
+      text-align: center;
+      padding: 16px;
+    }
+
+    /* Speed Control Bar */
+    .controls-card {
+      width: 100%;
+      max-width: 360px;
+      margin-top: 16px;
+      background: #1f1f1f;
+      padding: 12px;
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .controls-label {
+      font-size: 0.8rem;
+      color: #aaa;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .speed-buttons {
+      display: flex;
+      gap: 6px;
+      justify-content: space-between;
+    }
+
+    .speed-btn {
+      flex: 1;
+      padding: 8px 0;
+      background: #2b2b2b;
+      border: 1px solid #3a3a3a;
+      border-radius: 6px;
+      color: #eee;
+      font-size: 0.85rem;
+    }
+
+    .speed-btn.active {
+      background: #ff3333;
+      border-color: #ff3333;
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Shorts Web Player</h1>
+  </header>
+
+  <div class="input-box">
+    <input type="text" id="urlInput" placeholder="Paste YouTube Short URL..." />
+    <button onclick="pasteClipboard()">Paste</button>
+    <button onclick="loadFromInput()">Play</button>
+  </div>
+
+  <div class="player-wrapper">
+    <div id="placeholder" class="placeholder-text">Paste a Short URL above to start playing</div>
+    <div id="player"></div>
+  </div>
+
+  <div class="controls-card">
+    <span class="controls-label">Speed Controls</span>
+    <div class="speed-buttons">
+      <button class="speed-btn" onclick="setSpeed(0.75)">0.75x</button>
+      <button class="speed-btn active" id="btn-1" onclick="setSpeed(1)">1x</button>
+      <button class="speed-btn" onclick="setSpeed(1.25)">1.25x</button>
+      <button class="speed-btn" onclick="setSpeed(1.5)">1.5x</button>
+      <button class="speed-btn" onclick="setSpeed(2)">2x</button>
+    </div>
+  </div>
+
+  <!-- YouTube IFrame API -->
+  <script src="https://www.youtube.com/iframe_api"></script>
+  <script>
+    let player;
+    let isApiReady = false;
+
+    function onYouTubeIframeAPIReady() {
+      isApiReady = true;
+    }
+
+    // Extract 11-character Video ID from various YouTube URL formats
+    function extractVideoId(url) {
+      const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|shorts\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+      const match = url.match(regExp);
+      return (match && match[2].length === 11) ? match[2] : null;
+    }
+
+    // Quick Paste from Mobile Clipboard
+    async function pasteClipboard() {
+      try {
+        const text = await navigator.clipboard.readText();
+        document.getElementById('urlInput').value = text;
+        loadFromInput();
+      } catch (err) {
+        alert('Clipboard access denied. Please paste manually.');
+      }
+    }
+
+    function loadFromInput() {
+      const url = document.getElementById('urlInput').value.trim();
+      const videoId = extractVideoId(url);
+
+      if (!videoId) {
+        alert('Invalid YouTube URL');
+        return;
+      }
+
+      document.getElementById('placeholder').style.display = 'none';
+
+      if (!player) {
+        player = new YT.Player('player', {
+          videoId: videoId,
+          playerVars: {
+            'autoplay': 1,
+            'rel': 0,
+            'modestbranding': 1,
+            'playsinline': 1
+          },
+          events: {
+            'onReady': (event) => event.target.playVideo()
+          }
+        });
+      } else {
+        player.loadVideoById(videoId);
+      }
+    }
+
+    // Speed Control Logic
+    function setSpeed(rate) {
+      if (player && typeof player.setPlaybackRate === 'function') {
+        player.setPlaybackRate(rate);
+
+        // Update UI Active State
+        document.querySelectorAll('.speed-btn').forEach(btn => btn.classList.remove('active'));
+        event.target.classList.add('active');
+      }
+    }
+  </script>
+</body>
+</html>
