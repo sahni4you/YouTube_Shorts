@@ -110,7 +110,7 @@
     .controls-card {
       width: 100%;
       max-width: 360px;
-      margin-top: 47px;     /*  Change #6 , was 16px  -- done on 23Jul26 */
+      margin-top: 22px;     /*  Change #6 , Original was 16px, then made 47px & on Adding button#Scroll_To_Center - the Current Value  -- done on 23Jul26 */
       background: #1f1f1f;
       padding: 12px;
       border-radius: 12px;
@@ -168,6 +168,24 @@
     .default-speed-box button {
       flex: 0.6;
     }
+
+    div#Scroll_To_Center_container {
+      width: 100%;   /* 500px */
+      max-width: 360px; /* Matches the player and controls-card */
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    button#Scroll_To_Center {
+      /* width: 100px;      Let Padding handle the width, as suggested by Gemini Chat  */
+      color: rgb(80 80 80);
+      background: rgb(30 30 30);
+      padding: 5px 30px;
+      margin-top: 20px;
+      border-radius: 4px;
+      font: 16px Calibri;
+      transition: none;
+    }
   </style>
 </head>
 <body>
@@ -185,6 +203,10 @@
   <div class="player-wrapper">
     <div id="placeholder" class="placeholder-text">Paste a Short URL above to start playing</div>
     <div id="player"></div>
+  </div>
+
+  <div id="Scroll_To_Center_container">
+      <button id="Scroll_To_Center" onclick="Scroll_To_Center()">Scroll</button>
   </div>
 
   <div class="controls-card">
@@ -323,6 +345,15 @@
         if (parseFloat(btn.getAttribute('data-rate')) === rate) {
           btn.classList.add('active');
         }
+      });
+    }
+
+
+    function Scroll_To_Center() {
+        window.scrollBy({
+        top: 90, // Adjust this pixel value as needed
+        left: 0,
+        behavior: 'smooth'
       });
     }
   </script>
