@@ -266,6 +266,14 @@
 
       document.getElementById('placeholder').style.display = 'none';
 
+	// ---> ADD THE SCROLL CODE HERE <---
+      window.scrollBy({
+	top: 50, // Adjust this pixel value as needed
+	left: 0,
+	behavior: 'smooth'
+      });
+	// -----------------------------------
+
       if (!player) {
         player = new YT.Player('player', {
           videoId: videoId,
