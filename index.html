@@ -110,7 +110,7 @@
     .controls-card {
       width: 100%;
       max-width: 360px;
-      margin-top: 22px;     /*  Change #6 , Original was 16px, then made 47px & on Adding button#Scroll_To_Center - the Current Value  -- done on 23Jul26 */
+      margin-top: 12px;     /*  Change #6 , Original was 16px, then made 47px & on Adding button#Scroll_To_Center - the Current Value  -- done on 23Jul26 */
       background: #1f1f1f;
       padding: 12px;
       border-radius: 12px;
@@ -156,18 +156,22 @@
       gap: 8px;
     }
 
-    .default-speed-box input[type="text"] {
+    div.default-speed-box input[type="text"] {
       flex: 0.4;
       text-align: center;
-      /*  The below 3 Css Lines, Added by Sac , on 23Jul26  */
+      /*  The below 4 Css Lines, Added by Sac , on 23Jul26  */
       max-width: 150px;
       font-weight: bold;
       color: rgb(255, 255, 100);
+      padding: 10px;
     }
 
-    .default-speed-box button {
+    div.default-speed-box button {
       flex: 0.6;
+      padding: 10px;   /*  Added by Sac , this has to be Same with input in this div, so as to Decrease height of  div.default-speed-box  , Decreased height from  12px  to  10px  */
     }
+
+
 
     div#Scroll_To_Center_container {
       width: 100%;   /* 500px */
@@ -180,8 +184,9 @@
       /* width: 100px;      Let Padding handle the width, as suggested by Gemini Chat  */
       color: rgb(80 80 80);
       background: rgb(30 30 30);
-      padding: 5px 30px;
-      margin-top: 20px;
+      padding: 6px 35px;
+      margin-top: 40px;
+      margin-right: 15px;
       border-radius: 4px;
       font: 16px Calibri;
       transition: none;
@@ -227,7 +232,9 @@
 
     <!-- Default Speed Feature -->
     <div class="default-speed-box">
-      <input type="text" id="Speed_to_set" value="" readonly placeholder="Rate" />
+      <!--    readonly  Attribute Removed from below input, So that Variable Speed can also be Set Like 0.5 or 0.6 , 
+                 which is not in Fixed buttons     -->
+      <input type="text" id="Speed_to_set" value="" placeholder="Rate" />
       <button id="set_Default_Speed" onclick="saveDefaultSpeed()">Set Speed</button>
     </div>
   </div>
